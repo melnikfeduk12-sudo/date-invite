@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Один важный вопрос</title>
+<style>
+  :root {
+    --bg: #2b2b2b;           
+    --card-bg: #0a0a0a;      
+    --accent: #e2c060;       
+    --text: #e0e0e0;
+    --text-muted: #8c8c8c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ================= КРАСИВЫЙ ФОН ================= */
+  .fancy-bg {
+    position: fixed; inset: 0;
+    background-image: url('kiss.jpg'); /* Изменено */
+    background-size: cover;
+    background-position: center;
+    filter: blur(12px) brightness(0.45) contrast(1.1);
+    opacity: 0;
+    transform: scale(1.1);
+    transition: opacity 1.5s ease, transform 2s ease;
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  .fancy-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.4) 0%, rgba(30, 10, 50, 0.7) 100%);
+  }
+
+  .fancy-bg.active {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* ---------- Экраны ---------- */
+  .screen {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 20px;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    z-index: 10;
+  }
+  .screen.hidden {
+    opacity: 0; transform: scale(0.95); pointer-events: none;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 380px;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+    background: rgba(20, 20, 25, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 24px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    position: relative;
+    z-index: 12;
+  }
+
+  .image-card {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    margin-bottom: 24px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  
+  .image-card img {
+    width: 100%; height: 100%; object-fit: cover; opacity: 0.9;
+  }
+
+  .title { font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 24px; }
+
+  .buttons-row { display: flex; gap: 12px; width: 100%; justify-content: center; position: relative;}
+  
+  button {
+    font: inherit; border: none; cursor: pointer;
+    padding: 14px 24px; border-radius: 8px; font-weight: 600; font-size: 15px;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: var(--accent); color: #000;
+    flex: 1;
+  }
+  .btn-primary:hover { background: #f0d070; }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.1); color: var(--text);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .btn-secondary.escaped {
+    position: fixed; z-index: 99;
+    transition: left 0.3s cubic-bezier(.34,1.56,.64,1), top 0.3s cubic-bezier(.34,1.56,.64,1), transform 0.3s;
+  }
+
+  .input-group {
+    width: 100%; text-align: left; margin-bottom: 16px;
+  }
+  .input-group label {
+    display: block; font-size: 12px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.05em;
+  }
+  .input-group input {
+    width: 100%; padding: 14px; border-radius: 8px;
+    background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+    color: #fff; font-family: inherit; font-size: 16px;
+    outline: none;
+  }
+  .input-group input:focus { border-color: var(--accent); }
+  ::-webkit-calendar-picker-indicator { filter: invert(1); }
+
+  .choice-grid {
+    display: grid; grid-template-columns: 1fr; gap: 10px; width: 100%; margin-bottom: 24px;
+  }
+  .choice-btn {
+    background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text); padding: 16px; text-align: left; display: flex; align-items: center; gap: 12px;
+    border-radius: 8px;
+  }
+  .choice-btn:hover { border-color: var(--accent); background: rgba(255,255,255,0.08); }
+
+  .btn-calendar {
+    display: block; width: 100%; text-decoration: none; text-align: center;
+    background: transparent; border: 1px solid var(--accent); color: var(--accent);
+    padding: 14px; border-radius: 8px; font-weight: 600; margin-top: 10px;
+  }
+  .btn-calendar:hover { background: rgba(226, 192, 96, 0.1); }
+
+  .progress-container {
+    width: 100%; max-width: 380px; height: 2px; background: rgba(255,255,255,0.1); margin-top: 30px; border-radius: 2px; overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%; width: 33%; background: #fff; transition: width 0.4s ease;
+  }
+
+  /* ================= ПАДАЮЩИЕ ЧАСТИЦЫ ================= */
+  #particles { position: fixed; inset: 0; pointer-events: none; z-index: 6; overflow: hidden; }
+  .particle {
+    position: fixed; bottom: -60px;
+    animation: floatUp linear forwards;
+    will-change: transform, opacity;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0) rotate(0); opacity: 0; }
+    10% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
+  }
+
+  .music-btn {
+    position: fixed; top: 20px; right: 20px; z-index: 100;
+    width: 40px; height: 40px; border-radius: 50%; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff;
+    font-size: 16px; display: none;
+    backdrop-filter: blur(5px);
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Красивый размытый фон -->
+<div class="fancy-bg" id="fancyBg"></div>
+
+<!-- Музыка -->
+<audio id="bgm" loop src="music.mp3"></audio> <!-- Изменено -->
+<button class="music-btn" id="musicBtn">🔇</button>
+
+<!-- ЭКРАН 1: Вопрос -->
+<div class="screen" id="screen1">
+  <div class="container">
+    <div class="image-card">
+      <img src="moon.png" alt="Космос" onerror="this.style.display='none';"> <!-- Изменено -->
+    </div>
+    
+    <h1 class="title">Пойдёшь со мной на свидание?</h1>
+    <p class="subtitle">Только честно 🦆</p>
+
+    <div class="buttons-row">
+      <button class="btn-primary" id="yesBtn">Да</button>
+      <button class="btn-secondary" id="noBtn">Нет</button>
+    </div>
+    <div class="progress-container"><div class="progress-bar" style="width: 10%;"></div></div>
+  </div>
+</div>
+
+<!-- ЭКРАН 2: Выбор места -->
+<div class="screen hidden" id="screen2">
+  <div class="container">
+    <h2 class="title" style="margin-bottom: 20px;">Куда мы пойдём?</h2>
+    <div class="choice-grid">
+      <button class="choice-btn" onclick="selectPlace('Кино')">
+        <span style="font-size: 24px;">🍿</span> 
+        <div><div style="font-weight:600">Кино</div><div style="font-size:12px; color:var(--text-muted)">Большой экран и попкорн</div></div>
+      </button>
+      <button class="choice-btn" onclick="selectPlace('Ресторан')">
+        <span style="font-size: 24px;">🍷</span> 
+        <div><div style="font-weight:600">Ресторан</div><div style="font-size:12px; color:var(--text-muted)">Вкусная еда и разговоры</div></div>
+      </button>
+      <button class="choice-btn" onclick="selectPlace('Встретить закат')">
+        <span style="font-size: 24px;">🌅</span> 
+        <div><div style="font-weight:600">Встретить закат</div><div style="font-size:12px; color:var(--text-muted)">Красиво и романтично</div></div>
+      </button>
+    </div>
+    <div class="progress-container"><div class="progress-bar" style="width: 40%;"></div></div>
+  </div>
+</div>
+
+<!-- ЭКРАН 3: Дата и время -->
+<div class="screen hidden" id="screen3">
+  <div class="container">
+    <h2 class="title" style="margin-bottom: 20px;">Когда тебе удобно?</h2>
+    
+    <div class="input-group">
+      <label>Выбери дату</label>
+      <input type="date" id="dateInput">
+    </div>
+    
+    <div class="input-group" style="margin-bottom: 30px;">
+      <label>Выбери время</label>
+      <input type="time" id="timeInput" value="19:00">
+    </div>
+
+    <button class="btn-primary" style="width: 100%;" onclick="confirmDateTime()">Подтвердить</button>
+    <div class="progress-container"><div class="progress-bar" style="width: 70%;"></div></div>
+  </div>
+</div>
+
+<!-- ЭКРАН 4: Итог -->
+<div class="screen hidden" id="screen4">
+  <div class="container">
+    <div class="image-card" style="height: 200px; aspect-ratio: auto; margin-bottom: 20px;">
+      <img src="moon.png" alt="Космос" style="opacity: 0.6;"> <!-- Изменено -->
+      <div style="position: absolute; text-align: center;">
+        <div style="font-size: 50px; margin-bottom: 10px;">🦆❤️</div>
+        <h2 class="title" style="font-size: 20px; text-shadow: 0 2px 10px rgba(0,0,0,0.8);">Договорились!</h2>
+      </div>
+    </div>
+    
+    <div style="width: 100%; text-align: left; margin-bottom: 24px; background: rgba(0,0,0,0.4); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+      <p style="margin-bottom: 8px;"><span style="color:var(--text-muted)">Место:</span> <span id="finalPlace" style="font-weight:600; float:right;"></span></p>
+      <p style="margin-bottom: 8px;"><span style="color:var(--text-muted)">Дата:</span> <span id="finalDate" style="font-weight:600; float:right;"></span></p>
+      <p><span style="color:var(--text-muted)">Время:</span> <span id="finalTime" style="font-weight:600; float:right;"></span></p>
+    </div>
+
+    <a href="#" id="calBtn" target="_blank" class="btn-calendar">Добавить в календарь 📆</a>
+    <div class="progress-container"><div class="progress-bar" style="width: 100%; background: var(--accent);"></div></div>
+  </div>
+</div>
+
+<div id="particles"></div>
+
+<script>
+/* ================= СОСТОЯНИЕ ================= */
+let state = { place: '', date: '', time: '' };
+
+/* ================= УТИЛИТЫ ПЕРЕХОДА ================= */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+/* ================= КНОПКА "НЕТ" ================= */
+const noBtn = document.getElementById('noBtn');
+const yesBtn = document.getElementById('yesBtn');
+const NO_TEXTS = ['Нет', 'Уверена?', 'Подумай 🦆', 'Точно?', 'Ну пожалуйста...', 'Сломалась 🛠'];
+let noCount = 0;
+
+function escapeNo() {
+  if (noCount >= NO_TEXTS.length) return;
+  noCount++;
+  noBtn.textContent = NO_TEXTS[noCount];
+  
+  if (!noBtn.classList.contains('escaped')) {
+    document.body.appendChild(noBtn); 
+    noBtn.classList.add('escaped');
+  }
+
+  const w = noBtn.offsetWidth, h = noBtn.offsetHeight;
+  const x = Math.random() * (window.innerWidth - w - 40) + 20;
+  const y = Math.random() * (window.innerHeight - h - 40) + 20;
+  
+  noBtn.style.left = x + 'px';
+  noBtn.style.top = y + 'px';
+  noBtn.style.transform = `scale(${Math.max(0.5, 1 - noCount * 0.1)})`;
+
+  if (noCount > 3) {
+    yesBtn.style.transform = `scale(${1 + (noCount - 3) * 0.15})`;
+  }
+}
+noBtn.addEventListener('mouseenter', escapeNo);
+noBtn.addEventListener('click', escapeNo);
+
+/* ================= КНОПКА "ДА" ================= */
+yesBtn.addEventListener('click', () => {
+  document.getElementById('fancyBg').classList.add('active');
+  showScreen('screen2');
+  playMusic();
+});
+
+/* ================= ШАГ 2: ВЫБОР МЕСТА ================= */
+function selectPlace(place) {
+  state.place = place;
+  showScreen('screen3');
+  
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById('dateInput').value = tomorrow.toISOString().split('T')[0];
+}
+
+/* ================= ШАГ 3: ДАТА И ВРЕМЯ ================= */
+function confirmDateTime() {
+  const dateVal = document.getElementById('dateInput').value;
+  const timeVal = document.getElementById('timeInput').value;
+
+  if (!dateVal || !timeVal) {
+    alert("Пожалуйста, выбери дату и время 🦆");
+    return;
+  }
+
+  state.date = dateVal;
+  state.time = timeVal;
+
+  const d = new Date(dateVal);
+  const options = { day: 'numeric', month: 'long', year: 'numeric' };
+  const formattedDate = d.toLocaleDateString('ru-RU', options);
+
+  document.getElementById('finalPlace').textContent = state.place;
+  document.getElementById('finalDate').textContent = formattedDate;
+  document.getElementById('finalTime').textContent = timeVal;
+
+  generateCalendarLink();
+  showScreen('screen4');
+}
+
+/* ================= ГЕНЕРАЦИЯ ССЫЛКИ НА КАЛЕНДАРЬ ================= */
+function generateCalendarLink() {
+  const [year, month, day] = state.date.split('-');
+  const [hours, minutes] = state.time.split(':');
+
+  const startStr = `${year}${month}${day}T${hours}${minutes}00`;
+  
+  const endDate = new Date(state.date + 'T' + state.time);
+  endDate.setHours(endDate.getHours() + 3);
+  const endStr = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+  const title = encodeURIComponent(`Свидание: ${state.place} 🦆`);
+  const details = encodeURIComponent('С нетерпением жду нашей встречи!');
+  
+  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}`;
+  
+  document.getElementById('calBtn').href = url;
+}
+
+/* ================= ПАДАЮЩИЕ ЧАСТИЦЫ ================= */
+const particles = document.getElementById('particles');
+const EMOJIS = ['🦆', '🦆', '❤️', '💛', '✨'];
+let particleInterval = null;
+
+function startParticles() {
+  if (particleInterval) return;
+  particleInterval = setInterval(() => {
+    const el = document.createElement('div');
+    el.className = 'particle';
+    el.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.fontSize = (18 + Math.random() * 20) + 'px';
+    el.style.animationDuration = (5 + Math.random() * 5) + 's';
+    particles.appendChild(el);
+    
+    setTimeout(() => el.remove(), 10000);
+  }, 400);
+}
+
+/* ================= МУЗЫКА ================= */
+const bgm = document.getElementById('bgm');
+const musicBtn = document.getElementById('musicBtn');
+
+function playMusic() {
+  musicBtn.style.display = 'flex';
+  bgm.play().then(() => {
+    musicBtn.textContent = '🔊';
+    startParticles();
+  }).catch(() => {
+    musicBtn.textContent = '🔇';
+    startParticles(); 
+  });
+}
+
+musicBtn.addEventListener('click', () => {
+  if (bgm.paused) {
+    bgm.play();
+    musicBtn.textContent = '🔊';
+  } else {
+    bgm.pause();
+    musicBtn.textContent = '🔇';
+  }
+});
+</script>
+</body>
+</html>
